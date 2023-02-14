@@ -18,7 +18,7 @@ export class BookmarkController {
   constructor(private bookmarkService: BookmarkService) {}
 
   @UseGuards(JwtGuard)
-  @Get('get-a-bookmark')
+  @Get('get-a-bookmark/:id')
   GetBookmark(@Req() req: Request, @Param('id') id: string) {
     return this.bookmarkService.GetBookmark(req, id);
   }

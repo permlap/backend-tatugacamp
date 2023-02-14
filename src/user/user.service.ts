@@ -1,14 +1,15 @@
 import { PrismaService } from './../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { LikeDto } from './dto';
+import { LikeDto, UserDto } from './dto';
 import { Request } from 'express';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  GetUser(req: Request) {
-    return req.user;
+  GetUser(user: User) {
+    return user;
   }
 
   async UpdateLike(dto: LikeDto, req: any) {
@@ -39,6 +40,23 @@ export class UserService {
       });
 
       return updateLike;
+    }
+  }
+
+  async UpdateUser(user: User, dto: UserDto) {
+    try {
+      const updateUser = await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          ...dto,
+        },
+      });
+      delete updateUser.hash;
+      return updateUser;
+    } catch (err) {
+      return { message: 'something went wrong', err };
     }
   }
 }

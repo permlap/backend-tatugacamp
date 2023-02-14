@@ -28,18 +28,16 @@ export class AuthService {
 
       return this.signToken(user.id, user.email);
     } catch (err) {
-      if (err instanceof PrismaClientKnownRequestError) {
-        if (err.code === 'P2002') {
-          return {
-            message: 'The email has already been used',
-            codeError: { err },
-          };
-        } else {
-          return {
-            message: 'error occour',
-            codeError: { err },
-          };
-        }
+      if (err.code === 'P2002') {
+        return {
+          message: 'The email has already been used',
+          codeError: { err },
+        };
+      } else {
+        return {
+          message: 'error occour',
+          codeError: { err },
+        };
       }
     }
   }
@@ -69,7 +67,7 @@ export class AuthService {
       email,
     };
     const token = await this.jwt.signAsync(payload, {
-      expiresIn: '15m',
+      expiresIn: '60m',
       secret: this.config.get('JWT_SECRET'),
     });
     return {
