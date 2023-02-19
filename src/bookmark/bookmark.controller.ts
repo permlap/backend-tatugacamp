@@ -34,9 +34,4 @@ export class BookmarkController {
   CreateBookmark(@Req() req: Request, @Body() dto: BookmarkDto) {
     return this.bookmarkService.CreateBookmark(dto, req);
   }
-
-  @Get('pdf')
-  GetPdfBookmark() {
-    return this.bookmarkService.GetPdfBookmark();
-  }
 }

@@ -1,15 +1,10 @@
 import { BookmarkDto } from './dto/bookmark.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { Browser } from 'puppeteer';
-import { InjectBrowser } from 'nest-puppeteer';
 
 @Injectable()
 export class BookmarkService {
-  constructor(
-    private prisma: PrismaService,
-    @InjectBrowser() private readonly browser: Browser,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async GetBookmark(req: any, id: string) {
     const getBookmark = await this.prisma.bookmark.findFirst({
@@ -38,26 +33,5 @@ export class BookmarkService {
       },
     });
     return createBookmark;
-  }
-
-  async GetPdfBookmark() {
-    const page = await this.browser.newPage();
-    const website_url = 'https://tatugacamp.com/grammar/basic-grammar';
-
-    // Open URL in current page
-    await page.goto(website_url, { waitUntil: 'networkidle0' });
-
-    //To reflect CSS used for screens instead of print
-    await page.emulateMediaType('screen');
-
-    // Downlaod the PDF
-    const pdf = await page.pdf({
-      path: 'result.pdf',
-      margin: { top: '100px', right: '50px', bottom: '100px', left: '50px' },
-      printBackground: true,
-      format: 'A2',
-    });
-
-    return pdf;
   }
 }
