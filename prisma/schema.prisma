@@ -1,111 +1,71 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
-
-  email String @unique
+  email String 
   hash  String
-
   likes Int? @db.Int
-
   firstName String?
+  picture String?
   lastName String?
-  bookmarks Bookmark[]
-  students Student[]
-  clasrooms Classroom[]
-
+  provider String
+  booknarks Bookmark[]
+  classroom Classroom[]
+  student Student[]
+  @@unique([email,provider])
   @@map("users")
+}
+
+model Student {
+   id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  firstName String
+  lastName String
+  number String
+
+  classroomId String @db.ObjectId
+  classroom   Classroom   @relation(fields: [classroomId], references: [id])
+
+  userId String @db.ObjectId
+  user User @relation(fields: [userId], references: [id])
+  @@unique([firstName, number])
+  @@map("students")
+}
+
+model Classroom {
+   id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  title String
+  description String?
+  level String
+
+  classroomCode String @unique
+  students Student[]
+  
+  userId String @db.ObjectId
+  user User @relation(fields: [userId], references: [id])
+  @@map("classrooms")
 }
 
 model Bookmark {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
-
   title       String
   description String?
   link        String
-
   userId String @db.ObjectId
   user   User   @relation(fields: [userId], references: [id])
-
   @@map("booknarks")
 }
-
-model Classroom {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
-
-  title       String
-   level String
-  description String?
- 
- classroomCode String @unique
-
-  userId String @db.ObjectId
-  user   User   @relation(fields: [userId], references: [id])
-  
-  students Student[]
-  assignments Assignment[]
-  @@map("classrooms")
-}
-
-
-model Student{
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
-
-  firstName String
-  lastName String
-  number String 
-
-  score Int?
-  SumScore Int?
-
-  userId String @db.ObjectId
-  user   User   @relation(fields: [userId], references: [id])
-
-  classroomId String @db.ObjectId
-  classroom   Classroom   @relation(fields: [classroomId], references: [id])
-
-  assignments Assignment[]
-  @@unique([number, classroomId])
-  @@map("students")
-}
-
-model Assignment{
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
-
-  title String
-  description String?
-  Number String
-
-  score Int?
-  deadLine DateTime? 
-
-  studentId String @db.ObjectId
-  student   Student   @relation(fields: [studentId], references: [id])
-
-  classroomId String @db.ObjectId
-  classroom   Classroom   @relation(fields: [classroomId], references: [id])
-  
-  @@map("assignments")
-}
-
-

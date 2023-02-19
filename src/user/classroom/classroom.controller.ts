@@ -11,9 +11,10 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
+
 import { JwtGuard } from 'src/auth/guard';
 import { GetUser } from 'src/auth/decorator';
+import { User } from '@prisma/client';
 
 @UseGuards(JwtGuard)
 @Controller('/user/classroom')

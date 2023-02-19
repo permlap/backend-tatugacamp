@@ -1,8 +1,6 @@
 import { StudentDto } from './dto/student.dto';
 import { StudentService } from './student.service';
 import { Body, Controller, Get, Param, Query, Put } from '@nestjs/common';
-import { GetUser } from 'src/auth/decorator';
-import { User } from '@prisma/client';
 
 @Controller('student')
 export class StudentController {

@@ -1,3 +1,4 @@
+import { ClassroomModule } from './../user/classroom/classroom.module';
 import { StudentModule } from './../student/student.module';
 import { BookmarkModule } from './../bookmark/bookmark.module';
 import { PrismaModule } from './../prisma/prisma.module';
