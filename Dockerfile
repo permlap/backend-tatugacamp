@@ -1,46 +1,67 @@
 
-# PRODUCTION DOCKERFILE
-# ---------------------
-# This Dockerfile allows to build a Docker image of the NestJS application
-# and based on a NodeJS 16 image. The multi-stage mechanism allows to build
-# the application in a "builder" stage and then create a lightweight production
-# image containing the required dependencies and the JS build files.
-# 
-# Dockerfile best practices
-# https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
-# Dockerized NodeJS best practices
-# https://github.com/nodejs/docker-node/blob/master/docs/BestPractices.md
-# https://www.bretfisher.com/node-docker-good-defaults/
-# http://goldbergyoni.com/checklist-best-practice-of-node-js-in-production/
+###################
+# BUILD FOR LOCAL DEVELOPMENT
+###################
 
-FROM node:16-alpine as builder
+FROM node:18-alpine As development
 
-ENV NODE_ENV build
-
-USER node
+# Create app directory
 WORKDIR /usr/src/app
 
-COPY package*.json ./
+# Copy application dependency manifests to the container image.
+# A wildcard is used to ensure copying both package.json AND package-lock.json (when available).
+# Copying this first prevents re-running npm install on every code change.
+COPY --chown=node:node package*.json ./
 COPY prisma ./prisma/
-
-RUN npm ci
 RUN npx prisma generate
+# Install app dependencies using the `npm ci` command instead of `npm install`
+RUN npm ci
+
+# Bundle app source
+COPY --chown=node:node . .
+
+# Use the node user from the image (instead of the root user)
+USER node
+
+###################
+# BUILD FOR PRODUCTION
+###################
+
+FROM node:18-alpine As build
+
+WORKDIR /usr/src/app
+
+COPY --chown=node:node package*.json ./
+COPY prisma ./prisma/
+RUN npx prisma generate
+# In order to run `npm run build` we need access to the Nest CLI which is a dev dependency. In the previous development stage we ran `npm ci` which installed all dependencies, so we can copy over the node_modules directory from the development image
+COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
 
 COPY --chown=node:node . .
-RUN npm run build \
-    && npm prune --production
 
-# ---
+# Run the build command which creates the production bundle
+RUN npm run build
 
-FROM node:16-alpine
-
+# Set NODE_ENV environment variable
 ENV NODE_ENV production
 
+# Running `npm ci` removes the existing node_modules directory and passing in --only=production ensures that only the production dependencies are installed. This ensures that the node_modules directory is as optimized as possible
+RUN npm ci --only=production && npm cache clean --force
+
 USER node
-WORKDIR /usr/src/app
 
-COPY --from=builder --chown=node:node /usr/src/app/package*.json ./
-COPY --from=builder --chown=node:node /usr/src/app/node_modules/ ./node_modules/
-COPY --from=builder --chown=node:node /usr/src/app/dist/ ./dist/
+###################
+# PRODUCTION
+###################
 
+FROM node:18-alpine As production
+
+# Copy the bundled code from the build stage to the production image
+COPY prisma ./prisma/
+RUN npx prisma generate
+COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
+COPY --chown=node:node --from=build /usr/src/app/dist ./dist
+
+# Start the server using the production build
 CMD [ "node", "dist/main.js" ]
+
