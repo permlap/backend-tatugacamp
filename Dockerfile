@@ -105,7 +105,7 @@ FROM node:18-alpine As development
 
 # Create app directory
 WORKDIR /usr/src/app
-COPY .env ./
+
 COPY prisma ./prisma/
 
 RUN npx prisma generate
@@ -133,7 +133,6 @@ WORKDIR /usr/src/app
 
 
 COPY prisma ./prisma/
-
 COPY --chown=node:node package*.json ./
 
 # In order to run `npm run build` we need access to the Nest CLI which is a dev dependency. In the previous development stage we ran `npm ci` which installed all dependencies, so we can copy over the node_modules directory from the development image
