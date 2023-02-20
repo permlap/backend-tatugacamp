@@ -36,4 +36,3 @@ lerna-debug.log*
 
 # Secret file
 .env
-.env production
