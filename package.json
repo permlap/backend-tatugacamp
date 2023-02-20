@@ -6,6 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "docker:build:run": "npm run docker:build && npm run docker:run",
+    "docker:run": "docker run --env-file .env -p80:3000 nest-cloud-run",
+    "docker:build": "docker build -t nest-cloud-run .",
     "prisma:generate": "prisma generate",
     "prisma:dev:deploy": "prisma db push",
     "db:dev:rm": "docker compose rm  -s -f -v",
